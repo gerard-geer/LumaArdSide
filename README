@@ -1,0 +1,31 @@
+This is the Arduino sid of LUMA. It manages two independent sets of PWM banks.
+Each bank uses three of the is PWM channels the atMega has, and divies them up
+for each color channel. Each channel can have its own pattern, which in turn
+has several parameters for fine tuning.
+
+Signals sent to the arduino follow the same 9 byte format as the rest of the 
+project:
+[153][bank][channel][pattern][param 1][param 2][param 3][param 4][checksum]
+
+The first byte is simply the value 153, and can be used to detect and prevent
+bitshift mutations of the message. This check is disabled, as false alarms would
+occur too often, e.g. rarely, to warrant checking the veracity of the message
+after travelling over a shield USB cable.
+
+The second byte is the bank we wnat to modify. At this point it should only be a 
+binary choice, choosing between the two PWM banks: pins 3, 5, 6 and 9, 10, 11.
+
+The channel byte represents the channel we wish to edit. If this byte is 0-2, we
+edit the red, green or blue channel respectively-and independently. However, if
+this value is 3, we take control of all three color channels on the given bank,
+and modulate them using a preset.
+
+The pattern byte determines the single-channel pattern or preset, depending on 
+the value of the channel byte.
+
+The parameter bytes are used to further personalize the selected pattern or preset.
+If a pattern does not use all four parameter values, it uses only the amount it needs,
+beginning with the first param byte, and ignores the rest.
+
+The checksum byte is the floored average of the first 8 bytes. This is also disabled for
+similar reasons.
